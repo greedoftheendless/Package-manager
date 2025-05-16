@@ -35,9 +35,5 @@ tldr --update
 
 Watch a demo and review of the Package Manager tool here:
 
-[![Package Manager Review Video](https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg)](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mkv)
-
-Or simply click the link below to view the video file:
-
-[Package Manager Review Video](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mkv)
+[Package Manager Review Video](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mp4)
 
