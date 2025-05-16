@@ -14,8 +14,6 @@ A simple terminal-based Bash script that helps you:
 
 ![package-manager review.mp4](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mp4)
 
-GitHub will open the video in the browser with a player interface.
-
 ---
 
 ## 📦 Supported Package Managers
