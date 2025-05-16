@@ -12,9 +12,8 @@ A simple terminal-based Bash script that helps you:
 
 # Review
 
-Watch a demo and review of the Package Manager tool here:
-
-[Package Manager Review Video](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mp4)
+**App Review**
+![Package Manager Review Video](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mp4)
 
 ---
 
