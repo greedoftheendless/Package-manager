@@ -10,10 +10,13 @@ A simple terminal-based Bash script that helps you:
 
 ---
 
-# Review
+## 📽️ Review
 
-**App Review**
-![Package Manager Review Video](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mp4)
+Click the link below to watch the demo video directly on GitHub:
+
+👉 [package-manager review.mkv](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.mkv)
+
+GitHub will open the video in the browser with a player interface.
 
 ---
 
