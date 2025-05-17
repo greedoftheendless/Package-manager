@@ -37,3 +37,4 @@ Install `tldr` via:
 ```bash
 sudo pacman -S tldr
 tldr --update
+
