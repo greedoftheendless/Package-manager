@@ -1,40 +1,38 @@
-# 🐧 Linux Package Finder & Installer
+# pkgmanager — A Terminal UI Package Manager Helper
 
-A simple terminal-based Bash script that helps you:
-
-- Search for a Linux package by name using multiple AUR helpers and `pacman`
-- Get quick package summaries (via `tldr`)
-- View how many results are found with each tool
-- Choose how to install it with a numbered prompt
-- Handle `sudo` permissions for `pacman` installations
+`pkgmanager` is a simple **Bash-based terminal UI (TUI) tool** to help you search, compare, and install packages from Arch Linux package managers (`pacman`, `yay`, `paru`). It also tracks your history and lets you explore featured tools by tags.
 
 ---
 
-## 📽️ Review
+## Features
 
-**Review**
-![Review](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.gif)
-
----
-
-## 📦 Supported Package Managers
-
-- [`yay`](https://github.com/Jguer/yay)
-- [`paru`](https://github.com/Morganamilo/paru)
-- `pacman` (with sudo prompt)
+- 🔍 **Search packages** across `pacman`, `yay`, and `paru` with concise results.
+- 📊 **Compare packages** side-by-side based on download size and dependency count.
+- 📂 **View history** of searched packages with interactive search.
+- 🌟 **Featured tools** browsing by tags using official `pacman` groups.
+- ✅ Install selected packages directly through your chosen package manager.
+- 🧭 Easy navigation with commands:
+  - Type `:m` anytime in inputs to **go back to the main menu**.
+  - Type `:q` (in search) or press `Ctrl+C` to **quit the tool** gracefully.
 
 ---
 
-## 🧰 Prerequisites
+## Requirements
 
-Make sure you have the following installed:
+- Bash shell
+- [gum](https://github.com/charmbracelet/gum) — for interactive UI prompts.
+- Arch Linux environment with `pacman` installed.
+- Optional but recommended: `yay` and/or `paru` for AUR support.
+- Optional: `tldr` command for package summaries.
 
-- One or more of: `yay`, `paru`, `pacman` (pre-installed on Arch-based systems)
-- Optional: [`tldr`](https://tldr.sh/) (for brief package explanations)
+---
 
-Install `tldr` via:
+## Installation
+
+1. Clone or download this script.
+
+2. Make it executable:
 
 ```bash
-sudo pacman -S tldr
-tldr --update
+chmod +x pkgmanager.sh
 
