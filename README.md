@@ -12,8 +12,8 @@ A simple terminal-based Bash script that helps you:
 
 ## 📽️ Review
 
-[![package-manager review]
-[Review](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.gif)
+**Review**
+![Review](https://github.com/greedoftheendless/Package-manager/blob/main/package-manager%20review.gif)
 
 ---
 
