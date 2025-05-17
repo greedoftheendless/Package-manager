@@ -1,104 +1,149 @@
 #!/bin/bash
 
-read -p "Enter package name to search: " pkg
+HISTORY_FILE="$HOME/.pkgmanager_history"
+mkdir -p ~/.pkgmanager
 
-declare -A results
-declare -A cmds
-managers=("yay" "paru" "pacman")
+trap 'echo -e "\nExiting..."; exit 0' SIGINT
 
-for manager in "${managers[@]}"; do
-  echo -e "\nSearching with $manager..."
-  if ! command -v $manager &>/dev/null; then
-    echo "$manager not installed, skipping."
-    continue
-  fi
-
-  matches=$($manager -Ss "$pkg" 2>/dev/null | wc -l)
-  echo "$matches results found with $manager."
-  results[$manager]=$matches
-
-  if ((matches > 0)); then
-    cmds[$manager]="$manager -S $pkg"
-  fi
-done
-
-echo -e "\nInstallation commands:"
-i=1
-declare -A options
-
-for manager in "${managers[@]}"; do
-  if [[ ${results[$manager]} -gt 0 ]]; then
-    echo "$i) ${cmds[$manager]}"
-    options[$i]="${cmds[$manager]}"
-    ((i++))
-  fi
-done
-
-echo -e "\nSummary (from tldr):"
-if command -v tldr &>/dev/null; then
-  tldr "$pkg" || echo "No tldr entry found."
-else
-  echo "tldr command not found, install it to see package summaries."
-fi
-
-read -p "Enter the number to install (or press Enter to skip): " choice
-
-if [[ -z "$choice" ]]; then
-  echo "Install skipped."
-  exit 0
-fi
-
-if [[ -z "${options[$choice]}" ]]; then
-  echo "Invalid choice."
-  exit 1
-fi
-
-selected_cmd=${options[$choice]}
-selected_manager=$(echo "$selected_cmd" | awk '{print $1}')
-
-if [[ "$selected_manager" == "pacman" ]]; then
-  echo "⚠️ Running through pacman requires root (sudo) permission."
-  read -p "Proceed with sudo? (y/n): " yn
-  case $yn in
-  [Yy]*)
-    sudo $selected_cmd
-    ;;
-  [Nn]*)
-    # Ask if want to try other managers
-    echo "Do you want to try installing through other package managers? (y/n): "
-    read try_others
-    case $try_others in
-    [Yy]*)
-      echo "Available alternative package managers:"
-      alt_i=1
-      declare -A alt_options
-      for mgr in "yay" "paru"; do
-        if [[ $mgr != "pacman" && ${results[$mgr]} -gt 0 ]]; then
-          echo "$alt_i) ${cmds[$mgr]}"
-          alt_options[$alt_i]="${cmds[$mgr]}"
-          ((alt_i++))
-        fi
-      done
-      if [[ ${#alt_options[@]} -eq 0 ]]; then
-        echo "No alternative package managers available."
-        exit 0
-      fi
-      read -p "Enter the number to install (or press Enter to skip): " alt_choice
-      if [[ -n "${alt_options[$alt_choice]}" ]]; then
-        ${alt_options[$alt_choice]}
-      else
-        echo "No valid choice made. Exiting."
-      fi
-      ;;
-    *)
-      echo "User exited."
+main_menu() {
+  while true; do
+    action=$(gum choose --limit 1 "🔍 Search Package" "📊 Compare Packages" "📂 View History" "🌟 Featured Tools" "❌ Exit")
+    case "$action" in
+    "🔍 Search Package") search_package ;;
+    "📊 Compare Packages") compare_packages ;;
+    "📂 View History") view_history ;;
+    "🌟 Featured Tools") featured_tools ;;
+    "❌ Exit")
+      echo "Goodbye!"
+      exit 0
       ;;
     esac
-    ;;
-  *)
-    echo "Invalid input. Exiting."
-    ;;
-  esac
-else
-  $selected_cmd
-fi
+  done
+}
+
+normalize_input() {
+  echo "$1" | tr '[:upper:]' '[:lower:]' | xargs
+}
+
+search_package() {
+  while true; do
+    pkg=$(gum input --placeholder "Enter package name (:m for main menu, :q to quit)")
+    norm_pkg=$(normalize_input "$pkg")
+
+    if [[ "$norm_pkg" == ":m" ]]; then
+      return
+    elif [[ "$norm_pkg" == ":q" ]]; then
+      echo "Exiting..."
+      exit 0
+    elif [[ -z "$norm_pkg" ]]; then
+      continue
+    fi
+
+    echo "$pkg" >>"$HISTORY_FILE"
+    gum spin --title "Searching $pkg..." -- sleep 1
+
+    for manager in yay paru pacman; do
+      if command -v "$manager" &>/dev/null; then
+        echo -e "\n🔧 $manager Results:"
+        $manager -Ss "$pkg" | head -n 10
+      else
+        echo "$manager not found."
+      fi
+    done
+
+    if command -v tldr &>/dev/null; then
+      echo -e "\n📄 TLDR for $pkg:"
+      tldr "$pkg" || echo "No TLDR entry."
+    fi
+
+    gum confirm "Install $pkg?" && install_package "$pkg"
+  done
+}
+
+install_package() {
+  pkg="$1"
+  manager=$(gum choose yay paru pacman)
+  if [[ "$manager" == "pacman" ]]; then
+    gum confirm "Use sudo pacman?" && sudo pacman -S "$pkg"
+  else
+    $manager -S "$pkg"
+  fi
+}
+
+compare_packages() {
+  while true; do
+    pkgs=$(gum input --placeholder "Enter comma-separated packages (:m for main menu)")
+    norm_pkgs=$(normalize_input "$pkgs")
+
+    if [[ "$norm_pkgs" == ":m" ]]; then
+      return
+    elif [[ -z "$norm_pkgs" ]]; then
+      continue
+    fi
+
+    IFS=',' read -ra pkg_arr <<<"$pkgs"
+    gum spin --title "Comparing packages..." -- sleep 1
+
+    echo -e "Package\tSize (KB)\tDependencies"
+    for pkg in "${pkg_arr[@]}"; do
+      info=$(pacman -Si "$pkg" 2>/dev/null)
+      size=$(echo "$info" | grep "Download Size" | awk '{print $4}')
+      deps=$(echo "$info" | grep "Depends On" | sed 's/Depends On *: //')
+      dep_count=$(echo "$deps" | wc -w)
+      echo -e "$pkg\t${size:-N/A}\t${dep_count:-0}"
+    done | column -t -s $'\t'
+  done
+}
+
+view_history() {
+  while true; do
+    if [ -f "$HISTORY_FILE" ]; then
+      selection=$(gum filter --placeholder "Search history (:m for main menu)" <"$HISTORY_FILE")
+      norm_sel=$(normalize_input "$selection")
+
+      if [[ "$norm_sel" == ":m" || -z "$selection" ]]; then
+        return
+      else
+        echo "You selected: $selection"
+      fi
+    else
+      echo "No history yet."
+      sleep 2
+      return
+    fi
+  done
+}
+
+featured_tools() {
+  while true; do
+    tag=$(gum input --placeholder "Enter tag (e.g. editor, net, dev, cli) or :m for main menu")
+    norm_tag=$(normalize_input "$tag")
+
+    if [[ "$norm_tag" == ":m" ]]; then
+      return
+    elif [[ -z "$norm_tag" ]]; then
+      continue
+    fi
+
+    echo -e "🔍 Searching featured tools from pacman groups tagged with '$tag'...\n"
+
+    results=$(pacman -Sg | grep -i "$tag" | awk '{print $2}' | sort -u)
+
+    if [ -z "$results" ]; then
+      echo "🚫 No tools found for '$tag'."
+      sleep 2
+      continue
+    fi
+
+    selection=$(echo "$results" | gum filter --placeholder "Select tool to install or type :m")
+    norm_sel=$(normalize_input "$selection")
+
+    if [[ "$norm_sel" == ":m" || -z "$selection" ]]; then
+      continue
+    else
+      gum confirm "Install $selection?" && install_package "$selection"
+    fi
+  done
+}
+
+main_menu
