@@ -7,10 +7,9 @@ trap 'echo -e "\nExiting..."; exit 0' SIGINT
 
 main_menu() {
   while true; do
-    action=$(gum choose --limit 1 "🔍 Search Package" "📊 Compare Packages" "📂 View History" "🌟 Featured Tools" "❌ Exit")
+    action=$(gum choose --limit 1 "🔍 Search Package" "📂 View History" "🌟 Featured Tools" "❌ Exit")
     case "$action" in
     "🔍 Search Package") search_package ;;
-    "📊 Compare Packages") compare_packages ;;
     "📂 View History") view_history ;;
     "🌟 Featured Tools") featured_tools ;;
     "❌ Exit")
@@ -70,31 +69,6 @@ install_package() {
   fi
 }
 
-compare_packages() {
-  while true; do
-    pkgs=$(gum input --placeholder "Enter comma-separated packages (:m for main menu)")
-    norm_pkgs=$(normalize_input "$pkgs")
-
-    if [[ "$norm_pkgs" == ":m" ]]; then
-      return
-    elif [[ -z "$norm_pkgs" ]]; then
-      continue
-    fi
-
-    IFS=',' read -ra pkg_arr <<<"$pkgs"
-    gum spin --title "Comparing packages..." -- sleep 1
-
-    echo -e "Package\tSize (KB)\tDependencies"
-    for pkg in "${pkg_arr[@]}"; do
-      info=$(pacman -Si "$pkg" 2>/dev/null)
-      size=$(echo "$info" | grep "Download Size" | awk '{print $4}')
-      deps=$(echo "$info" | grep "Depends On" | sed 's/Depends On *: //')
-      dep_count=$(echo "$deps" | wc -w)
-      echo -e "$pkg\t${size:-N/A}\t${dep_count:-0}"
-    done | column -t -s $'\t'
-  done
-}
-
 view_history() {
   while true; do
     if [ -f "$HISTORY_FILE" ]; then
@@ -116,7 +90,7 @@ view_history() {
 
 featured_tools() {
   while true; do
-    tag=$(gum input --placeholder "Enter tag (e.g. editor, net, dev, cli) or :m for main menu")
+    tag=$(gum input --placeholder "Enter tag or keyword (e.g. editor, dev, network) or :m for main menu")
     norm_tag=$(normalize_input "$tag")
 
     if [[ "$norm_tag" == ":m" ]]; then
@@ -125,17 +99,23 @@ featured_tools() {
       continue
     fi
 
-    echo -e "🔍 Searching featured tools from pacman groups tagged with '$tag'...\n"
+    echo -e "\n🔍 Searching for tools matching tag '$norm_tag'...\n"
 
-    results=$(pacman -Sg | grep -i "$tag" | awk '{print $2}' | sort -u)
+    if command -v yay &>/dev/null; then
+      results=$(yay -Ss "$norm_tag" | grep -E "^[a-z0-9]" | cut -d/ -f2 | awk '{print $1}' | sort -u)
+    elif command -v paru &>/dev/null; then
+      results=$(paru -Ss "$norm_tag" | grep -E "^[a-z0-9]" | cut -d/ -f2 | awk '{print $1}' | sort -u)
+    else
+      results=$(pacman -Ss "$norm_tag" | grep -E "^[a-z0-9]" | cut -d/ -f2 | awk '{print $1}' | sort -u)
+    fi
 
     if [ -z "$results" ]; then
-      echo "🚫 No tools found for '$tag'."
+      echo "🚫 No packages found for '$norm_tag'."
       sleep 2
       continue
     fi
 
-    selection=$(echo "$results" | gum filter --placeholder "Select tool to install or type :m")
+    selection=$(echo "$results" | gum filter --placeholder "Select a package to install or type :m")
     norm_sel=$(normalize_input "$selection")
 
     if [[ "$norm_sel" == ":m" || -z "$selection" ]]; then

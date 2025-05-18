@@ -7,7 +7,6 @@
 ## Features
 
 - 🔍 **Search packages** across `pacman`, `yay`, and `paru` with concise results.
-- 📊 **Compare packages** side-by-side based on download size and dependency count.
 - 📂 **View history** of searched packages with interactive search.
 - 🌟 **Featured tools** browsing by tags using official `pacman` groups.
 - ✅ Install selected packages directly through your chosen package manager.
