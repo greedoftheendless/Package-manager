@@ -36,3 +36,5 @@
 ```bash
 chmod +x pkgmanager.sh
 
+
+Hope you find this tool useful
