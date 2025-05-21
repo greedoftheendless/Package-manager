@@ -1,6 +1,6 @@
-# pkgmanager — A Terminal UI Package Manager Helper
+# pkgfinder — A Terminal UI Package Manager Helper
 
-`pkgmanager` is a simple **Bash-based terminal UI (TUI) tool** to help you search, compare, and install packages from Arch Linux package managers (`pacman`, `yay`, `paru`). It also tracks your history and lets you explore featured tools by tags.
+`pkgfinder` is a simple **Bash-based terminal UI (TUI) tool** to help you search, compare, and install packages from Arch Linux package managers (`pacman`, `yay`, `paru`). It also tracks your history and lets you explore featured tools by tags.
 
 ---
 
@@ -33,7 +33,7 @@
 2. Make it executable:
 
 ```bash
-chmod +x pkgmanager.sh
+chmod +x pkgfinder.sh
 
 
 Hope you find this tool useful
